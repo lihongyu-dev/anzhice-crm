@@ -16,7 +16,19 @@ import { SESSION_COOKIE, verifySession } from "@/lib/auth/token";
  *    （沿用门户站 2026-08-26 的修法）
  */
 
-const PUBLIC_PATHS = new Set(["/login", "/api/auth/login"]);
+/**
+ * 不需会话认证的路径。
+ *
+ * /api/ingest/leads 是机器对机器接口（门户站投递线索），
+ * 没有浏览器也没有 cookie，用自己的 INGEST_TOKEN 鉴权（见 lib/ingest/token.ts）。
+ * 在这里放行不等于无鉴权 —— 它只是不走会话这条链。
+ * 该接口只有 POST，无 GET，即使令牌泄露也拉不走存量线索。
+ */
+const PUBLIC_PATHS = new Set([
+  "/login",
+  "/api/auth/login",
+  "/api/ingest/leads",
+]);
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
