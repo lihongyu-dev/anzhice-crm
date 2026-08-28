@@ -1,0 +1,49 @@
+[Unit]
+Description=安知策 CRM (crm.anzhice.site) 客户资质结构化处理系统
+Documentation=https://crm.anzhice.site
+After=network-online.target postgresql.service
+Wants=network-online.target
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/.openclaw/workspace/crm
+
+# Next.js 自动加载 WorkingDirectory 下的 .env.local，不用 EnvironmentFile。
+# 注意：.env.local 里 ADMIN_PASSWORD_HASH 的每个 $ 都必须写成 \$，
+# 否则 dotenv-expand 会把 $argon2id/$v/$m 当变量引用吃掉（2026-08-27 实测）。
+Environment=NODE_ENV=production
+Environment=PATH=/home/ubuntu/.nvm/versions/node/v22.23.1/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# ExecStart 两个坑，都踩过：
+# 1. 不能指向 node_modules/.bin/next —— 那是 shell 包装脚本，
+#    node 当 JS 解析会 SyntaxError（2026-08-26 因此重启失败 4 次）。
+# 2. 不能写含版本哈希的 .pnpm/next@16.3.3_@babel+core@7.29.7_... 路径 ——
+#    依赖一升级哈希就变，服务下次就起不来（2026-08-27 实测 MODULE_NOT_FOUND）。
+# node_modules/next 是 pnpm 维护的符号链接，跟着版本自动走，是唯一稳定入口。
+ExecStart=/home/ubuntu/.nvm/versions/node/v22.23.1/bin/node /home/ubuntu/.openclaw/workspace/crm/node_modules/next/dist/bin/next start -H 127.0.0.1 -p 3001
+
+# 只监听 127.0.0.1：外部流量一律经 nginx。
+# 直接暴露到 0.0.0.0 会绕过 nginx 的 X-Forwarded-For 注入，
+# 导致限流拿不到真实 IP，全部记成 unknown。
+
+Restart=always
+RestartSec=3
+StartLimitBurst=5
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=crm
+
+# 基础加固
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=read-only
+# Next.js 运行时要写 .next/cache，备份目录也在项目内
+ReadWritePaths=/home/ubuntu/.openclaw/workspace/crm
+
+[Install]
+WantedBy=multi-user.target

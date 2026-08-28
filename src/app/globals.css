@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+/**
+ * 不做暗色模式。
+ * 标注是长时间、高专注度的工作，固定亮色配色避免对比度变化带来的误读，
+ * 也避免同一字段在两种模式下观感不同影响标注一致性。
+ */
+
+@theme {
+  --font-sans: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei",
+    sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+
+body {
+  font-family: var(--font-sans);
+}
+
+/* 移动端点击不高亮，减少单手操作时的视觉噪声 */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 数字输入框去掉上下箭头：手机上容易误触 */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
