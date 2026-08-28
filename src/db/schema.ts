@@ -136,7 +136,18 @@ export const qualifications = pgTable(
     // 布尔字段：null 表示对话里没提，不是 false
     creditOverdue: boolean("credit_overdue"),
     hasMortgage: boolean("has_mortgage"),
-    hasCar: boolean("has_car"),
+    /**
+     * 语义是「有车贷」，不是「有车」。
+     *
+     * 2026-08-28 eval 实测：原名 hasCar 导致 qwen-plus 在
+     * 「有辆车，全款的，没有车贷」上输出 true —— 字段名本身在误导模型。
+     * 抽取层已于当时改名 hasCarLoan，但数据库这一层漏了（仍叫 has_car）。
+     *
+     * 2026-08-29 补齐：否则一旦写落库代码从 has_car 列读写，
+     * 这个已经修好的 bug 会从数据库层回来。
+     * 字段名不一致本身就是 bug 温床。
+     */
+    hasCarLoan: boolean("has_car_loan"),
     hasProvidentFund: boolean("has_provident_fund"),
 
     age: integer("age"),

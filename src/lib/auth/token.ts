@@ -13,7 +13,11 @@
 
 const encoder = new TextEncoder();
 
-/** 令牌有效期 30 天。单人系统 + 移动端为主，频繁登录的摩擦大于会话延长的风险 */
+/**
+ * 令牌有效期 30 天。
+ * 单人系统 + 移动端为主的使用场景，频繁登录的摩擦大于会话延长带来的风险；
+ * 且系统未暴露任何写入型公开接口，会话被盗的影响面可控。
+ */
 export const SESSION_MAX_AGE_SEC = 30 * 24 * 60 * 60;
 
 export const SESSION_COOKIE = "az_session";
