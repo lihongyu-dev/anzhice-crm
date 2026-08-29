@@ -11,6 +11,7 @@ import {
   LEAD_STATUSES,
   type LeadStatus,
 } from "@/lib/leads/status";
+import MatchPanel from "./match-panel";
 
 /**
  * 线索卡片。
@@ -22,6 +23,9 @@ import {
  * ③ 拿到号码后直接给 tel: 链接，一步拨出去。
  * ④ 状态改成「养客中」时前端就要求填日期 —— 后端也会拦（nurture_needs_date），
  *    但在这里拦住能省一次失败往返。
+ * ⑤ 资质匹配（MatchPanel）按需加载，不随列表下发。
+ *    列表可能有上百条，预取全部匹配结果等于把 5 款产品 × N 条线索的
+ *    判定全算一遍 —— 而实际每次只看一两条。
  */
 
 type LeadCardLead = {
@@ -187,6 +191,12 @@ export default function LeadCard({ lead }: { lead: LeadCardLead }) {
               {lead.rawNote}
             </div>
           )}
+
+          {/*
+            资质匹配。放在号码之后、状态之前 ——
+            打电话前要知道问什么，打完才改状态，顺序对应实际动作次序。
+          */}
+          <MatchPanel leadId={lead.id} />
 
           <div>
             <label className="block text-xs text-slate-500">状态</label>
