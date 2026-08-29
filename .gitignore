@@ -32,6 +32,9 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# 但示例文件必须入库：README 让人 cp .env.example .env.local，
+# 文件不在仓库里那句指令就是死的。此文件只含占位值，无真实密钥。
+!.env.example
 
 # ⚠️ 敏感数据。以下目录含真实客户手机号/收入/征信信息，绝不可进仓库。
 # 2026-08-27：pg_dump 备份曾在 .gitignore 覆盖前落盘，补此规则。
