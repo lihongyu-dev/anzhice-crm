@@ -12,6 +12,7 @@ import {
   type LeadStatus,
 } from "@/lib/leads/status";
 import MatchPanel from "./match-panel";
+import ExtractPanel from "./extract-panel";
 
 /**
  * 线索卡片。
@@ -26,6 +27,10 @@ import MatchPanel from "./match-panel";
  * ⑤ 资质匹配（MatchPanel）按需加载，不随列表下发。
  *    列表可能有上百条，预取全部匹配结果等于把 5 款产品 × N 条线索的
  *    判定全算一遍 —— 而实际每次只看一两条。
+ * ⑥ 抽取（ExtractPanel）默认折叠，且排在匹配之后。
+ *    抽取要花钱、要等 5-15 秒、要在电脑上逐字段核对 —— 它不是车上的动作。
+ *    车上的动作是「看能推哪些产品」+「拨号」；抽取是回到家整理聊天记录时做的。
+ *    默认折叠避免误触产生真实费用。
  */
 
 type LeadCardLead = {
@@ -63,6 +68,7 @@ function fromLocalInput(v: string): string | null {
 export default function LeadCard({ lead }: { lead: LeadCardLead }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [extractOpen, setExtractOpen] = useState(false);
   const [phone, setPhone] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -197,6 +203,30 @@ export default function LeadCard({ lead }: { lead: LeadCardLead }) {
             打电话前要知道问什么，打完才改状态，顺序对应实际动作次序。
           */}
           <MatchPanel leadId={lead.id} />
+
+          {/*
+            抽取入口。默认折叠 —— 见组件顶部注释 ⑥：
+            这是「回家整理聊天记录」的动作，不是车上的动作，
+            而且每次点击都产生真实 API 费用，不该轻易误触。
+          */}
+          <div className="rounded-lg border border-slate-200 bg-slate-50/60">
+            <button
+              onClick={() => setExtractOpen((v) => !v)}
+              className="flex w-full items-center justify-between px-3 py-2 text-left"
+            >
+              <span className="text-sm font-medium text-slate-700">
+                粘对话 → AI 抽资质
+              </span>
+              <span className="text-xs text-slate-400">
+                {extractOpen ? "收起 ▲" : "展开 ▼"}
+              </span>
+            </button>
+            {extractOpen && (
+              <div className="border-t border-slate-200 px-3 py-2.5">
+                <ExtractPanel leadId={lead.id} />
+              </div>
+            )}
+          </div>
 
           <div>
             <label className="block text-xs text-slate-500">状态</label>
