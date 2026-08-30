@@ -2,6 +2,7 @@ import Link from "next/link";
 import { listLeads, getLeadStats } from "@/lib/leads/queries";
 import { LEAD_STATUSES, STATUS_META } from "@/lib/leads/status";
 import LeadCard from "./lead-card";
+import NewLead from "./new-lead";
 
 /**
  * 线索工作台（服务端组件）。
@@ -13,6 +14,9 @@ import LeadCard from "./lead-card";
  * ② 卡片流不是表格。表格在手机上必然横向滚动，单手滚不了。
  * ③ 拨号按钮直接 tel: 唤起，不要求先进详情页。
  * ④ 待办排序是「老的在前」—— 放着不管越久越该先打。
+ * ⑤ 「新建线索」放在列表最上面，不放在底部悬浮按钮里。
+ *    实际获客靠私域 —— 微信直聊的客户不会去官网填表，
+ *    **这条路径是主干道，不是辅助入口。**
  */
 
 export const dynamic = "force-dynamic";
@@ -86,6 +90,8 @@ export default async function LeadsPage({
         </div>
       </nav>
 
+      <NewLead />
+
       {rows.length === 0 ? (
         <div className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center">
           <p className="text-slate-600">
@@ -93,7 +99,7 @@ export default async function LeadsPage({
           </p>
           {view === "todo" && (
             <p className="mt-2 text-sm text-slate-400">
-              新线索会从官网表单自动进来
+              官网表单的线索会自动进来；微信直聊的客户用上面「新建线索」录
             </p>
           )}
         </div>
