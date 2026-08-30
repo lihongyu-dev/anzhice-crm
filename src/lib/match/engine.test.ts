@@ -50,6 +50,7 @@ function blank(): ExtractionResult {
     age: null,
     city: null,
     companyType: null,
+    education: null,
   };
 }
 

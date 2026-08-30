@@ -152,6 +152,14 @@ export const qualifications = pgTable(
 
     age: integer("age"),
     companyType: text("company_type"), // state | private | foreign | self_employed | none
+    /**
+     * 学历：below_high_school | high_school | college | bachelor | master | doctor
+     *
+     * 存枚举字符串而不存客户原话：「大专」「大学」「本科」「研究生」
+     * 存原文就无法比大小，而信用贷产品的准入条件是「≥ 大专」这种阈值形式。
+     * 比大小靠 EDUCATION_RANK（src/lib/extract/types.ts）。
+     */
+    education: text("education"),
 
     /** 人工确认过的字段名列表。过了这一关的值才能用于正式判断 */
     verifiedFields: jsonb("verified_fields").$type<string[]>().default([]),

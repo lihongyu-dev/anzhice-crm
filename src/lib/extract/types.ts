@@ -64,6 +64,50 @@ export const incomeBasisSchema = z
 export type IncomeBasis = z.infer<typeof incomeBasisSchema>;
 
 /**
+ * 学历。从低到高有序 —— 顺序就是语义，规则引擎靠它做「≥ 本科」这类判断。
+ *
+ * 为什么用有序枚举而不是自由文本：
+ * 客户会说「大专」「大学」「本科」「研究生」「硕士」，存原文就无法比大小。
+ * 但归一时有一个真实歧义：「大学毕业」在口语里可能指大专也可能指本科。
+ * 所以 prompt 里明确要求：含义不确定时留 null，不猜。
+ *
+ * 注意没有 "unknown" 选项。学历不同于收入口径：
+ * 「提了学历但说不清是哪个级别」在业务上等于没有信息，多一个枚举值
+ * 只会让模型多一个逃避 null 的出口。
+ */
+export const EDUCATION_LEVELS = [
+  "below_high_school",
+  "high_school",
+  "college", // 大专 / 高职
+  "bachelor", // 本科
+  "master", // 硕士（含在读研究生）
+  "doctor",
+] as const;
+
+export const educationSchema = z.enum(EDUCATION_LEVELS).nullable();
+
+export type Education = z.infer<typeof educationSchema>;
+
+/** 学历排序用的秩，数字越大越高。规则引擎用它比阈值 */
+export const EDUCATION_RANK: Record<(typeof EDUCATION_LEVELS)[number], number> = {
+  below_high_school: 0,
+  high_school: 1,
+  college: 2,
+  bachelor: 3,
+  master: 4,
+  doctor: 5,
+};
+
+export const EDUCATION_LABELS: Record<(typeof EDUCATION_LEVELS)[number], string> = {
+  below_high_school: "高中以下",
+  high_school: "高中/中专",
+  college: "大专",
+  bachelor: "本科",
+  master: "硕士",
+  doctor: "博士",
+};
+
+/**
  * 模型输出的 schema。
  *
  * 每个字段都带 .default(null)，作用是**容忍模型漏键**。
@@ -94,6 +138,11 @@ export const extractionSchema = z.object({
 
   age: z.number().nullable().default(null),
   city: z.string().nullable().default(null),
+  /**
+   * 学历。部分信用贷产品把它当准入条件（常见下限是大专）。
+   * 归一为有序枚举而不存原文 —— 否则比不了大小，规则引擎用不了。
+   */
+  education: educationSchema.default(null),
   companyType: z
     .enum(["state", "private", "foreign", "self_employed", "none"])
     .nullable()

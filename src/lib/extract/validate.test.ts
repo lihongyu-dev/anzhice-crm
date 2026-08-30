@@ -23,6 +23,7 @@ const empty: ExtractionResult = {
   age: null,
   city: null,
   companyType: null,
+  education: null,
 };
 
 const approx = (min: number, max: number, rawText: string) => ({
