@@ -29,6 +29,24 @@ ExecStart=/home/ubuntu/.nvm/versions/node/v22.23.1/bin/node /home/ubuntu/.opencl
 # 直接暴露到 0.0.0.0 会绕过 nginx 的 X-Forwarded-For 注入，
 # 导致限流拿不到真实 IP，全部记成 unknown。
 
+# 停服务时用 SIGINT 而不是默认的 SIGTERM。
+#
+# 2026-08-30：每次 restart 日志里都会出现
+#   Main process exited, code=exited, status=143
+#   crm.service: Failed with result 'exit-code'
+# 143 = 128+15 = 被 SIGTERM 杀掉。服务本身没问题（重启后 Ready 正常），
+# 但这行红字会在每次正常重启时出现 —— 将来排查真故障时容易误判。
+# 一个总是亮着的错误标记等于没有错误标记。
+#
+# Next.js 对 SIGINT 有优雅退出处理，但**仍然以 130 退出**（128+2=SIGINT），
+# 不是 exit 0。2026-08-30 实测：只改 KillSignal 不够 —— 错误从 143 变成 130，
+# "Failed with result 'exit-code'" 还在。所以两个码都得声明为成功：
+#   130 = SIGINT（现在的正常停止路径）
+#   143 = SIGTERM（停止超时后 systemd 升级信号的中间态）
+KillSignal=SIGINT
+SuccessExitStatus=130 143
+TimeoutStopSec=20
+
 Restart=always
 RestartSec=3
 StartLimitBurst=5

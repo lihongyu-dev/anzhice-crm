@@ -48,9 +48,16 @@ export async function middleware(req: NextRequest) {
   );
 
   if (PUBLIC_PATHS.has(pathname)) {
-    // 已登录还访问登录页 → 直接送进工作台
+    /**
+     * 已登录还访问登录页 → 送进线索工作台。
+     *
+     * 2026-08-30 修正：原先落地页是 /app/label（标注台）。
+     * 那是标注台先做出来、工作台还不存在时留下的默认值，现在顺序反了：
+     * **工作台是每天要用的东西，标注台是偶尔用的内部工具。**
+     * 登录后的落地页应该是高频动作所在的页面，不是最早写完的那个页面。
+     */
     if (session && pathname === "/login") {
-      return NextResponse.redirect(new URL("/app/label", req.url));
+      return NextResponse.redirect(new URL("/app/leads", req.url));
     }
     return NextResponse.next();
   }
